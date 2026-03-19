@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "header": "REPLACE_WITH_HEADER_FROM_WARPCAST_DEVELOPER_PORTAL",
+    "payload": "REPLACE_WITH_PAYLOAD_FROM_WARPCAST_DEVELOPER_PORTAL",
+    "signature": "REPLACE_WITH_SIGNATURE_FROM_WARPCAST_DEVELOPER_PORTAL"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Crypto Wordplay",
+    "iconUrl": "https://cryptowordplay.xyz/icon.png",
+    "homeUrl": "https://cryptowordplay.xyz",
+    "imageUrl": "https://cryptowordplay.xyz/og-image.png",
+    "buttonTitle": "Play Now ⚡",
+    "splashImageUrl": "https://cryptowordplay.xyz/splash.png",
+    "splashBackgroundColor": "#060608",
+    "webhookUrl": "https://YOUR_BACKEND_URL/api/farcaster/webhook"
+  }
+}

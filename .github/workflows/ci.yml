@@ -1,0 +1,160 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Unit + mock tests (no infrastructure needed) ──────────────
+  unit:
+    name: Unit & Mock Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests (wordEngine, scoreEngine)
+        run: npm run test:unit
+
+      - name: Mock integration tests (game API, admin API)
+        run: npm run test:mock
+        env:
+          WORD_SALT:            test-salt-deterministic
+          JWT_SECRET:           test-jwt-secret
+          ADMIN_SECRET:         test-admin-secret
+          NODE_ENV:             test
+          RATE_LIMIT_GUESS_MAX: "10000"
+          RATE_LIMIT_WINDOW_MS: "60000"
+
+  # ── Real DB integration tests ────────────────────────────────
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB:       cwp_test
+          POSTGRES_USER:     cwp_test
+          POSTGRES_PASSWORD: cwp_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U cwp_test -d cwp_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run DB migrations
+        run: node src/db/migrate_all.js
+        env:
+          DATABASE_URL: postgresql://cwp_test:cwp_test@localhost:5433/cwp_test
+
+      - name: Integration tests
+        run: npm run test:ci -- --testPathPattern=integration --testPathIgnorePatterns=mock
+        env:
+          NODE_ENV:     test
+          DATABASE_URL: postgresql://cwp_test:cwp_test@localhost:5433/cwp_test
+          REDIS_URL:    redis://localhost:6380
+          WORD_SALT:    test-salt-deterministic
+          JWT_SECRET:   test-jwt-secret
+          ADMIN_SECRET: test-admin-secret
+          FARCASTER_APP_URL:        http://localhost:3002
+          BADGE_SIGNER_PRIVATE_KEY: "0x0000000000000000000000000000000000000000000000000000000000000001"
+          BADGE_CONTRACT_ADDRESS:   "0x0000000000000000000000000000000000000000"
+          BADGE_CHAIN_ID:           "84532"
+          RATE_LIMIT_GUESS_MAX:     "10000"
+          RATE_LIMIT_WINDOW_MS:     "60000"
+
+  # ── Smart contract tests ─────────────────────────────────────
+  contracts:
+    name: Contract Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: contracts/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile contracts
+        run: npx hardhat compile
+
+      - name: Run contract tests
+        run: npx hardhat test
+
+  # ── Lint / type-check (fast, no infra) ───────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Backend — check for syntax errors
+        run: |
+          cd backend
+          npm ci
+          node --check src/server.js
+          node --check src/app.js
+          find src -name "*.js" ! -path "*/__tests__/*" ! -path "*/node_modules/*" \
+            -exec node --check {} \;
+
+      - name: Contracts — check compilation
+        run: |
+          cd contracts
+          npm ci
+          npx hardhat compile

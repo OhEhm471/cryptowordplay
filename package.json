@@ -1,0 +1,26 @@
+{
+  "name": "cryptowordplay",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend",
+    "admin"
+  ],
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "cd frontend && npm run build",
+    "migrate": "cd backend && npm run migrate",
+    "dev:admin": "cd admin && npm run dev",
+    "build:admin": "cd admin && npm run build",
+    "test": "cd backend && npm test",
+    "test:unit": "cd backend && npm run test:unit",
+    "migrate:all": "cd backend && npm run migrate:all",
+    "migrate:status": "cd backend && npm run migrate:status"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
