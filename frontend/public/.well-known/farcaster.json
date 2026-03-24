@@ -1,18 +1,24 @@
 {
   "accountAssociation": {
-    "header": "REPLACE_WITH_HEADER_FROM_WARPCAST_DEVELOPER_PORTAL",
-    "payload": "REPLACE_WITH_PAYLOAD_FROM_WARPCAST_DEVELOPER_PORTAL",
-    "signature": "REPLACE_WITH_SIGNATURE_FROM_WARPCAST_DEVELOPER_PORTAL"
+    "header": "eyJmaWQiOjUyMjM2MSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDdhMzdEMGRiMzE4OGRjQkE0OTgxOTc3RTBjQUNCQkM5MzVDMDkzZTMifQ",
+    "payload": "eyJkb21haW4iOiJjcnlwdG93b3JkcGxheS1hcHAudmVyY2VsLmFwcCJ9",
+    "signature": "/fGI7ui/wbTq8JqtePQjSNcG8WbFU2FA1cCATdihfSxU4Gw7g7AeZBNjABuL58pwROWJ/BqMXwP6UHAiTbNY5Rw=",
+    "homeUrl": "https://cryptowordplay-app.vercel.app",
+    "imageUrl": "https://cryptowordplay-api.fly.dev/api/og/daily",
+    "buttonTitle": "Play Now",
+    "splashImageUrl": "https://cryptowordplay-app.vercel.app/splash.png",
+    "splashBackgroundColor": "#060608",
+    "webhookUrl": "https://cryptowordplay-api.fly.dev/api/farcaster/webhook"
   },
   "frame": {
     "version": "1",
     "name": "Crypto Wordplay",
-    "iconUrl": "https://cryptowordplay.xyz/icon.png",
-    "homeUrl": "https://cryptowordplay.xyz",
-    "imageUrl": "https://cryptowordplay.xyz/og-image.png",
-    "buttonTitle": "Play Now ⚡",
-    "splashImageUrl": "https://cryptowordplay.xyz/splash.png",
+    "iconUrl": "https://cryptowordplay-app.vercel.app/icon.png",
+    "homeUrl": "https://cryptowordplay-app.vercel.app",
+    "imageUrl": "https://cryptowordplay-api.fly.dev/api/og/daily",
+    "buttonTitle": "Play Now",
+    "splashImageUrl": "https://cryptowordplay-app.vercel.app/splash.png",
     "splashBackgroundColor": "#060608",
-    "webhookUrl": "https://YOUR_BACKEND_URL/api/farcaster/webhook"
+    "webhookUrl": "https://cryptowordplay-api.fly.dev/api/farcaster/webhook"
   }
 }
