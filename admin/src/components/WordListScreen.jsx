@@ -54,15 +54,15 @@ function SummaryBar({ summary }) {
   return (
     <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
       {LENGTHS.map(l => {
-        const row = summary?.find(s => parseInt(s.length) === l);
+        const row = summary?.[l];
         return (
           <div key={l} className="adm-card" style={{ flex: 1, minWidth: 100, textAlign: "center", padding: "10px 8px" }}>
             <div style={{ fontFamily: "var(--hd)", fontSize: 24, fontWeight: 700, color: "var(--gr)" }}>
-              {row?.active_count || 0}
+              {row?.active || 0}
             </div>
             <div style={{ fontSize: 9, color: "var(--gt)", letterSpacing: 1.5, marginTop: 2 }}>{l}-LETTER</div>
-            {row?.inactive_count > 0 && (
-              <div style={{ fontSize: 9, color: "var(--rd)", marginTop: 2 }}>{row.inactive_count} removed</div>
+            {row?.inactive > 0 && (
+              <div style={{ fontSize: 9, color: "var(--rd)", marginTop: 2 }}>{row.inactive} removed</div>
             )}
           </div>
         );
@@ -215,7 +215,7 @@ export default function WordListScreen() {
             {l}-Letter
             {summary && (
               <span style={{ marginLeft: 6, opacity: .7, fontSize: 9 }}>
-                ({summary.find(s => parseInt(s.length) === l)?.active_count || 0})
+                ({summary?.[l]?.active || 0})
               </span>
             )}
           </button>
@@ -512,3 +512,4 @@ export default function WordListScreen() {
     </div>
   );
 }
+
