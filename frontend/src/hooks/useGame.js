@@ -199,16 +199,30 @@ export function useGame(wordLength) {
   }
 
   const shareResult = useCallback(async () => {
-    const text = shareText || `⚡ Crypto Wordplay — ${gameState === "win" ? `Solved ${guesses.length}/4` : "Failed 4/4"} cryptowordplay.xyz`;
-    try {
-      await navigator.clipboard.writeText(text);
-      showToast("Copied to clipboard! 📋");
-    } catch {
-      showToast("Share: Open Warpcast");
+  const text = shareText || `⚡ Crypto Wordplay — ${gameState === "win" ? `Solved ${guesses.length}/4` : "Failed 4/4"} cryptowordplay-app.vercel.app`;
+  
+  try {
+    // Try Farcaster SDK first (inside Warpcast)
+    const { sdk } = await import("@farcaster/frame-sdk");
+    await sdk.actions.openUrl(
+      `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`
+    );
+  } catch {
+    // Fallback: try castUrl, then clipboard
+    if (castUrl) {
+      window.open(castUrl, "_blank");
+    } else {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("Copied to clipboard! 📋");
+      } catch {
+        showToast(text);
+      }
     }
-    gameApi.trackShare(wordLength).catch(() => {});
-  }, [shareText, gameState, guesses.length, wordLength]);
-
+  }
+  
+  gameApi.trackShare(wordLength).catch(() => {});
+}, [shareText, castUrl, gameState, guesses.length, wordLength]);
   // Keyboard letter state map
   const letterStates = {};
   evaluations.forEach((er, ri) => {
