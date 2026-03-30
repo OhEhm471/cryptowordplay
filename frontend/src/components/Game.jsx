@@ -78,7 +78,7 @@ export default function Game() {
   const stats = playerStats || game.stats || { streak: 0, wins: 0, played: 0, bestScore: 0 };
 
   // Board rendering
-  const MAX = 4;
+  const MAX = game.maxAttempts || 4;
   const rows = [];
   for (let r = 0; r < MAX; r++) {
     const isCur = r === game.guesses.length && game.gameState === "playing";
@@ -326,3 +326,4 @@ export default function Game() {
     </>
   );
 }
+

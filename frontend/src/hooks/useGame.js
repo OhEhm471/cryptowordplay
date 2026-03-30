@@ -1,14 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { gameApi } from "../lib/api";
 
-// ============================================================
-// useGame — Complete game state machine connected to backend
-// Falls back to localStorage when not authenticated
-// ============================================================
-
 const MAX_ATTEMPTS = 4;
 
-// Client-side word engine for instant feedback (mirrors server)
 function evaluateGuessClient(guess, target) {
   const result = Array(guess.length).fill("gray");
   const targetUsed = Array(target.length).fill(false);
@@ -26,24 +20,25 @@ function evaluateGuessClient(guess, target) {
 }
 
 export function useGame(wordLength) {
-  const [guesses,     setGuesses]     = useState([]);
-  const [evaluations, setEvaluations] = useState([]);
-  const [currentGuess, setCurrentGuess] = useState("");
-  const [gameState,   setGameState]   = useState("playing"); // playing|win|loss
-  const [targetWord,  setTargetWord]  = useState(null);
-  const [score,       setScore]       = useState(0);
+  const [guesses,        setGuesses]        = useState([]);
+  const [evaluations,    setEvaluations]    = useState([]);
+  const [currentGuess,   setCurrentGuess]   = useState("");
+  const [gameState,      setGameState]      = useState("playing");
+  const [targetWord,     setTargetWord]     = useState(null);
+  const [score,          setScore]          = useState(0);
   const [scoreBreakdown, setScoreBreakdown] = useState(null);
-  const [shareText,   setShareText]   = useState(null);
-  const [castUrl,     setCastUrl]     = useState(null);
-  const [stats,       setStats]       = useState(null);
-  const [isLoading,   setIsLoading]   = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error,       setError]       = useState(null);
-  const [shakeBoard,  setShakeBoard]  = useState(false);
-  const [popIndex,    setPopIndex]    = useState(null);
-  const [winRow,      setWinRow]      = useState(null);
-  const [toast,       setToast]       = useState(null);
+  const [shareText,      setShareText]      = useState(null);
+  const [castUrl,        setCastUrl]        = useState(null);
+  const [stats,          setStats]          = useState(null);
+  const [isLoading,      setIsLoading]      = useState(true);
+  const [isSubmitting,   setIsSubmitting]   = useState(false);
+  const [error,          setError]          = useState(null);
+  const [shakeBoard,     setShakeBoard]     = useState(false);
+  const [popIndex,       setPopIndex]       = useState(null);
+  const [winRow,         setWinRow]         = useState(null);
+  const [toast,          setToast]          = useState(null);
   const [newAchievements, setNewAchievements] = useState([]);
+  const [maxAttempts,    setMaxAttempts]    = useState(4);
   const toastRef = useRef(null);
 
   const showToast = useCallback((msg, duration = 1800) => {
@@ -52,7 +47,6 @@ export function useGame(wordLength) {
     toastRef.current = setTimeout(() => setToast(null), duration);
   }, []);
 
-  // Load session on mount and word length change
   useEffect(() => {
     loadSession();
   }, [wordLength]);
@@ -62,6 +56,7 @@ export function useGame(wordLength) {
     setCurrentGuess("");
     try {
       const data = await gameApi.getDailyChallenge(wordLength);
+      setMaxAttempts(data.maxAttempts || 4);
       if (data.session) {
         setGuesses(data.session.guesses || []);
         setEvaluations(data.session.evaluations || []);
@@ -76,7 +71,6 @@ export function useGame(wordLength) {
         setTargetWord(null);
       }
     } catch {
-      // API unavailable — load from localStorage fallback
       loadFromLocalStorage();
     } finally {
       setIsLoading(false);
@@ -147,13 +141,11 @@ export function useGame(wordLength) {
         setCastUrl(result.castUrl);
         if (result.stats) setStats(result.stats);
         if (result.newAchievements?.length > 0) setNewAchievements(result.newAchievements);
-
         saveToLocalStorage(newGuesses, newEvals, result.state, result.score, result.targetWord);
-
         if (result.state === "win") {
           setWinRow(newGuesses.length - 1);
           setTimeout(() => setWinRow(null), 900);
-          const msgs = ["WAGMI! 🚀", "Bullish! 🔥", "Based! 💎", "Close call! ✅"];
+          const msgs = ["WAGMI! ??", "Bullish! ??", "Based! ??", "Close call! ?"];
           setTimeout(() => showToast(msgs[newGuesses.length - 1] || "GG!", 2200), 300);
         } else {
           setTimeout(() => showToast(`Answer: ${result.targetWord}`, 3000), 300);
@@ -169,7 +161,6 @@ export function useGame(wordLength) {
       } else if (err.status === 409) {
         showToast("Round already complete");
       } else {
-        // Fallback: client-side evaluation if API is down
         handleOfflineGuess();
       }
     } finally {
@@ -178,7 +169,6 @@ export function useGame(wordLength) {
   }, [gameState, isSubmitting, currentGuess, wordLength, guesses, evaluations]);
 
   function handleOfflineGuess() {
-    // Client-side fallback — no server validation
     const OFFLINE_WORDS = { 3:["BTC","ETH","SOL"], 4:["HODL","DEFI","PUMP"], 5:["TOKEN","BLOCK","STAKE"], 6:["WALLET","BRIDGE","ORACLE"] };
     const list = OFFLINE_WORDS[wordLength] || OFFLINE_WORDS[5];
     const today = new Date().toISOString().split("T")[0];
@@ -199,31 +189,25 @@ export function useGame(wordLength) {
   }
 
   const shareResult = useCallback(async () => {
-  const text = shareText || `⚡ Crypto Wordplay — ${gameState === "win" ? `Solved ${guesses.length}/4` : "Failed 4/4"} cryptowordplay-app.vercel.app`;
-  
-  try {
-    // Try Farcaster SDK first (inside Warpcast)
-    const { sdk } = await import("@farcaster/frame-sdk");
-    await sdk.actions.openUrl(
-      `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`
-    );
-  } catch {
-    // Fallback: try castUrl, then clipboard
-    if (castUrl) {
-      window.open(castUrl, "_blank");
-    } else {
-      try {
-        await navigator.clipboard.writeText(text);
-        showToast("Copied to clipboard! 📋");
-      } catch {
-        showToast(text);
+    const text = shareText || `? Crypto Wordplay � ${gameState === "win" ? `Solved ${guesses.length}/${maxAttempts}` : `Failed ${maxAttempts}/${maxAttempts}`} cryptowordplay-app.vercel.app`;
+    try {
+      const { sdk } = await import("@farcaster/frame-sdk");
+      await sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`);
+    } catch {
+      if (castUrl) {
+        window.open(castUrl, "_blank");
+      } else {
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast("Copied to clipboard! ??");
+        } catch {
+          showToast(text);
+        }
       }
     }
-  }
-  
-  gameApi.trackShare(wordLength).catch(() => {});
-}, [shareText, castUrl, gameState, guesses.length, wordLength]);
-  // Keyboard letter state map
+    gameApi.trackShare(wordLength).catch(() => {});
+  }, [shareText, castUrl, gameState, guesses.length, maxAttempts, wordLength]);
+
   const letterStates = {};
   evaluations.forEach((er, ri) => {
     er.forEach((s, ci) => {
@@ -235,17 +219,15 @@ export function useGame(wordLength) {
   });
 
   return {
-    // State
     guesses, evaluations, currentGuess, gameState,
     targetWord, score, scoreBreakdown, stats,
     shareText, castUrl,
     isLoading, isSubmitting, error,
-    // UI state
     shakeBoard, popIndex, winRow, toast,
     letterStates,
-    attemptsLeft: MAX_ATTEMPTS - guesses.length,
+    maxAttempts,
+    attemptsLeft: maxAttempts - guesses.length,
     newAchievements,
-    // Actions
     addLetter, deleteLetter, submitGuess, shareResult, loadSession,
   };
 }
