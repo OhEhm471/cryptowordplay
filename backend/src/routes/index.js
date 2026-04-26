@@ -37,6 +37,7 @@ router.get("/game/daily/:length",  optionalAuth, abTestMiddleware, gameCtrl.getD
 router.get("/game/session/:length",optionalAuth, gameCtrl.getSession);
 router.post("/game/guess",         optionalAuth, abTestMiddleware, guessLimiter, gameCtrl.validateGuess, gameCtrl.submitGuess);
 router.post("/game/share",         optionalAuth, gameCtrl.trackShare);
+router.get("/game/hint/:length",   optionalAuth, gameCtrl.getHint);
 
 // ── Leaderboard ─────────────────────────────────────────────
 router.get("/leaderboard/daily",   optionalAuth, lbCtrl.getDaily);
@@ -97,3 +98,4 @@ router.post("/admin/cache/flush-leaderboard", authLimiter, adminAuth, adminCtrl.
 router.get("/admin/og/preview",           adminAuth, adminCtrl.previewOgImage);
 
 module.exports = router;
+

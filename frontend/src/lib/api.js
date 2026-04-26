@@ -75,6 +75,9 @@ export const gameApi = {
       method: "POST",
       body:   JSON.stringify({ wordLength }),
     }),
+
+  getHint: (wordLength) =>
+    request(`/game/hint/${wordLength}`),
 };
 
 // ============================================================
@@ -129,3 +132,4 @@ export const badgeApi = {
     body:   JSON.stringify({ achievementId, txHash }),
   }),
 };
+

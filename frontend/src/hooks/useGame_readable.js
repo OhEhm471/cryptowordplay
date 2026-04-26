@@ -39,8 +39,6 @@ export function useGame(wordLength) {
   const [toast,          setToast]          = useState(null);
   const [newAchievements, setNewAchievements] = useState([]);
   const [maxAttempts,    setMaxAttempts]    = useState(4);
-  const [hint,           setHint]           = useState(null);
-  const [hintLoading,    setHintLoading]    = useState(false);
   const toastRef = useRef(null);
 
   const showToast = useCallback((msg, duration = 1800) => {
@@ -56,7 +54,6 @@ export function useGame(wordLength) {
   async function loadSession() {
     setIsLoading(true);
     setCurrentGuess("");
-    setHint(null);
     try {
       const data = await gameApi.getDailyChallenge(wordLength);
       setMaxAttempts(data.maxAttempts || 4);
@@ -191,24 +188,8 @@ export function useGame(wordLength) {
     }
   }
 
-  const requestHint = useCallback(async () => {
-    if (guesses.length < 2) {
-      showToast("Make 2 guesses first");
-      return;
-    }
-    setHintLoading(true);
-    try {
-      const data = await gameApi.getHint(wordLength);
-      setHint(data.hint);
-    } catch (err) {
-      showToast(err.message || "Hint unavailable");
-    } finally {
-      setHintLoading(false);
-    }
-  }, [guesses.length, wordLength]);
-
   const shareResult = useCallback(async () => {
-    const text = shareText || `? Crypto Wordplay — ${gameState === "win" ? `Solved ${guesses.length}/${maxAttempts}` : `Failed ${maxAttempts}/${maxAttempts}`} cryptowordplay-app.vercel.app`;
+    const text = shareText || `? Crypto Wordplay ï¿½ ${gameState === "win" ? `Solved ${guesses.length}/${maxAttempts}` : `Failed ${maxAttempts}/${maxAttempts}`} cryptowordplay-app.vercel.app`;
     try {
       const { sdk } = await import("@farcaster/frame-sdk");
       await sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`);
@@ -247,7 +228,6 @@ export function useGame(wordLength) {
     maxAttempts,
     attemptsLeft: maxAttempts - guesses.length,
     newAchievements,
-    hint, hintLoading,
-    addLetter, deleteLetter, submitGuess, shareResult, loadSession, requestHint,
+    addLetter, deleteLetter, submitGuess, shareResult, loadSession,
   };
 }

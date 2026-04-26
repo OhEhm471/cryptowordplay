@@ -359,6 +359,25 @@ const migrations = [
       DROP TABLE IF EXISTS ab_experiments CASCADE;
     `,
   },
+  {
+    version: 14,
+    name: "add_category_to_word_lists",
+    up: `
+      ALTER TABLE word_lists ADD COLUMN IF NOT EXISTS category VARCHAR(64);
+      UPDATE word_lists SET category = 'DeFi'           WHERE word IN ('SWAP','POOL','YIELD','STAKE','VAULT','DEFI','LEND','FARM','LOCK','BOND');
+      UPDATE word_lists SET category = 'Blockchain'     WHERE word IN ('BLOCK','CHAIN','MINER','HASH','NODE','FORK','MINT','BURN');
+      UPDATE word_lists SET category = 'Trading'        WHERE word IN ('PUMP','DUMP','HODL','BULL','BEAR','LONG','SHORT','TRADE');
+      UPDATE word_lists SET category = 'Infrastructure' WHERE word IN ('BRIDGE','ORACLE','RELAY','PROXY','SHARD','LEDGER');
+      UPDATE word_lists SET category = 'Token'          WHERE word IN ('TOKEN','COIN','WRAP','ASSET');
+      UPDATE word_lists SET category = 'Security'       WHERE word IN ('AUDIT','SCAM','HACK','SAFE','SIGN');
+      UPDATE word_lists SET category = 'Wallet'         WHERE word IN ('WALLET','SEED','COLD');
+      UPDATE word_lists SET category = 'Layer 2'        WHERE word IN ('LAYER','ROLL','ZERO');
+      UPDATE word_lists SET category = 'Crypto'         WHERE word IN ('GAS','POW','POS','DAO','DEX','CEX','APY','TVL','APR','MINING','ESCROW');
+      UPDATE word_lists SET category = 'Coin'           WHERE word IN ('BTC','ETH','SOL');
+      UPDATE word_lists SET category = 'Crypto' WHERE category IS NULL;
+    `,
+    down: `ALTER TABLE word_lists DROP COLUMN IF EXISTS category;`,
+  },
 ];
 
 // ── Seed function for migration 12 ───────────────────────────

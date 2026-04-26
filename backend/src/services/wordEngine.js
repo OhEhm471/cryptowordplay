@@ -48,22 +48,28 @@ function buildValidWords(lists) {
 }
 
 // ── DB loader (called at startup + after mutations) ───────────
+// In-memory word categories map
+let WORD_CATEGORIES = {};
+
 async function reloadWords() {
   try {
     const db = require("../db/postgres");
     const { rows } = await db.query(
-      "SELECT word, length FROM word_lists WHERE active = TRUE ORDER BY length, word"
+      "SELECT word, length, category FROM word_lists WHERE active = TRUE ORDER BY length, word"
     );
     if (rows.length === 0) return { loaded: 0, source: "fallback" };
 
     const fresh = { 3: [], 4: [], 5: [], 6: [] };
+    const freshCategories = {};
     for (const row of rows) {
       if (fresh[row.length]) fresh[row.length].push(row.word);
+      if (row.category) freshCategories[row.word] = row.category;
     }
     for (const len of SUPPORTED_LENGTHS) {
       if (fresh[len].length > 0) WORD_LISTS[len] = fresh[len];
     }
     VALID_WORDS = buildValidWords(WORD_LISTS);
+    WORD_CATEGORIES = freshCategories;
     return { loaded: rows.length, source: "database" };
   } catch (err) {
     return { loaded: 0, source: "fallback", error: err.message };
@@ -140,6 +146,7 @@ function validateCandidate(word, length) {
 module.exports = {
   get WORD_LISTS()  { return WORD_LISTS;  },
   get VALID_WORDS() { return VALID_WORDS; },
+  get WORD_CATEGORIES() { return WORD_CATEGORIES; },
   SUPPORTED_LENGTHS,
   reloadWords,
   getDailyWord,
@@ -149,3 +156,6 @@ module.exports = {
   normalizeWord,
   validateCandidate,
 };
+
+
+

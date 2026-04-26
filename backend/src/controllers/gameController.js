@@ -426,10 +426,46 @@ async function saveSession(sessionId, data) {
   );
 }
 
+async function getHint(req, res, next) {
+  try {
+    const length = parseInt(req.params.length);
+    if (!wordEngine.SUPPORTED_LENGTHS.includes(length)) {
+      return res.status(400).json({ error: "Invalid word length" });
+    }
+
+    const today = wordEngine.getTodayString();
+    const targetWord = wordEngine.getDailyWord(length, today, process.env.WORD_SALT);
+
+    // Check player has at least 2 failed attempts today
+    if (req.player) {
+      const { rows } = await db.query(
+        `SELECT attempts_used, state FROM game_sessions
+         WHERE player_id = $1 AND play_date = $2 AND word_length = $3`,
+        [req.player.id, today, length]
+      );
+      const session = rows[0];
+      if (!session || session.attempts_used < 2) {
+        return res.status(403).json({
+          error: "Make at least 2 guesses before requesting a hint",
+          attemptsUsed: session?.attempts_used || 0,
+        });
+      }
+    }
+
+    // Get category for today word
+    const category = wordEngine.WORD_CATEGORIES[targetWord] || "Crypto";
+
+    res.json({ hint: `Category: ${category}`, category });
+  } catch (err) { next(err); }
+}
+
 module.exports = {
   getDailyChallenge,
   submitGuess,
   validateGuess,
   getSession,
   trackShare,
+  getHint,
 };
+
+

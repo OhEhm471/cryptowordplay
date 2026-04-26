@@ -207,31 +207,31 @@ export default function Game() {
                   </div>
                 </div>
               )}
-
-              {/* Keyboard */}
+              {/* Used Letters Strip */}
+              {game.gameState === "playing" && Object.keys(game.letterStates).length > 0 && (
+                <div className="used-letters">
+                  {Object.entries(game.letterStates)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([letter, state]) => (
+                      <div key={letter} className={`used-letter ${state}`}>{letter}</div>
+                    ))}
+                </div>
+              )}
+              {/* Hint Button */}
               {game.gameState === "playing" && (
-                <div className="kb">
-                  {KB_ROWS.map((row, ri) => (
-                    <div key={ri} className="kr">
-                      {row.map(k => {
-                        const isW = k === "ENTER" || k === "⌫";
-                        const st  = game.letterStates[k] || "";
-                        return (
-                          <div
-                            key={k}
-                            className={`key${isW ? " wd" : ""}${st ? " " + st : ""}`}
-                            onClick={() => {
-                              if (k === "ENTER") game.submitGuess();
-                              else if (k === "⌫") game.deleteLetter();
-                              else game.addLetter(k);
-                            }}
-                          >
-                            {k}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
+                <div className="hint-row">
+                  {game.hint ? (
+                    <div className="hint-box">?? {game.hint}</div>
+                  ) : (
+                    <button
+                      className="btn-hint"
+                      onClick={game.requestHint}
+                      disabled={game.guesses.length < 2 || game.hintLoading}
+                      title={game.guesses.length < 2 ? "Make 2 guesses first" : "Get a hint"}
+                    >
+                      {game.hintLoading ? "..." : game.guesses.length < 2 ? `?? Hint (${2 - game.guesses.length} more guess${2 - game.guesses.length === 1 ? "" : "es"})` : "?? Show Hint"}
+                    </button>
+                  )}
                 </div>
               )}
             </>
@@ -326,4 +326,5 @@ export default function Game() {
     </>
   );
 }
+
 
