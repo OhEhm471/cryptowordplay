@@ -1,0 +1,1 @@
+const db = require('./src/db/postgres'); db.query('SELECT word, category FROM word_lists WHERE length = 3 LIMIT 10').then(r => { console.log(JSON.stringify(r.rows, null, 2)); process.exit(0); }).catch(e => { console.error(e.message); process.exit(1); });
