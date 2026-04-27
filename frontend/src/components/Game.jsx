@@ -221,7 +221,7 @@ export default function Game() {
               {game.gameState === "playing" && (
                 <div className="hint-row">
                   {game.hint ? (
-                    <div className="hint-box">?? {game.hint}</div>
+                    <div className="hint-box">HINT: {game.hint}</div>
                   ) : (
                     <button
                       className="btn-hint"
@@ -229,7 +229,7 @@ export default function Game() {
                       disabled={game.guesses.length < 2 || game.hintLoading}
                       title={game.guesses.length < 2 ? "Make 2 guesses first" : "Get a hint"}
                     >
-                      {game.hintLoading ? "..." : game.guesses.length < 2 ? `?? Hint (${2 - game.guesses.length} more guess${2 - game.guesses.length === 1 ? "" : "es"})` : "?? Show Hint"}
+                      {game.hintLoading ? "..." : game.guesses.length < 2 ? `HINT (${2 - game.guesses.length} more guess${2 - game.guesses.length === 1 ? "" : "es"})` : "Show Hint"}
                     </button>
                   )}
                 </div>
@@ -326,5 +326,7 @@ export default function Game() {
     </>
   );
 }
+
+
 
 
