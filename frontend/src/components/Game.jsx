@@ -1,5 +1,5 @@
 import "../index.css";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useGame } from "../hooks/useGame";
 import { useLeaderboard } from "../hooks/useLeaderboard";
 import { useWalletAuth } from "../hooks/useWalletAuth";
@@ -26,6 +26,7 @@ export default function Game() {
   const [wordLength, setWordLength] = useState(5);
   const [modal, setModal]           = useState(null); // null|leaderboard|faq|achievements
   const [newAchievements, setNewAchievements] = useState([]);
+  const inputRef = useRef(null);
   const { displayName, isFarcasterFrame, isAuthenticated } = useWalletAuth();
   const game = useGame(wordLength);
   const lb   = useLeaderboard();
@@ -108,6 +109,22 @@ export default function Game() {
   return (
     <>
       <div className="app">
+        {/* Hidden input for mobile keyboard */}
+        <input
+          ref={inputRef}
+          style={{ position:"absolute", opacity:0, width:1, height:1, pointerEvents:"none" }}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="characters"
+          onInput={(e) => {
+            const val = e.target.value.toUpperCase();
+            if (val) { game.addLetter(val[val.length-1]); e.target.value = ""; }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") game.submitGuess();
+            if (e.key === "Backspace") game.deleteLetter();
+          }}
+        />
         {game.toast && <div className="toast">{game.toast}</div>}
 
         {/* Header */}
@@ -167,7 +184,7 @@ export default function Game() {
             </div>
           ) : (
             <>
-              <div className="board">{rows}</div>
+              <div className="board" onClick={() => inputRef.current?.focus()}>{rows}</div>
 
               {/* Result panel */}
               {(game.gameState === "win" || game.gameState === "loss") && (
@@ -326,6 +343,9 @@ export default function Game() {
     </>
   );
 }
+
+
+
 
 
 
